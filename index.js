@@ -113,13 +113,12 @@ module.exports = ({ markdownAST, markdownNode, getNode }, { components }) => {
       if (ent.note) {
         cite += "<span>  " + ent.note + " </span>";
       }
-      cite += author_string(ent, "${L}, ${I}", ", ", " and ");
+      cite += " " + author_string(ent, "${L}, ${I}", ", ", " and ");
       if (ent.year || ent.date) {
         cite += ", " + (ent.year || ent.date) + ". ";
       }
       cite += venue_string(ent);
       cite += doi_string(ent);
-      cite += "<br>";
       return cite;
     } else {
       return "?";
@@ -133,13 +132,12 @@ module.exports = ({ markdownAST, markdownNode, getNode }, { components }) => {
       if (ent.note) {
         cite += "<span>  " + ent.note + " </span>";
       }
-      cite += author_string(ent, "${L}, ${I}", ", ", " and ");
+      cite += " " + author_string(ent, "${L}, ${I}", ", ", " and ");
       if (ent.year || ent.date) {
         cite += ", " + (ent.year || ent.date) + ". ";
       }
       cite += venue_string(ent);
       cite += doi_string(ent);
-      cite += "<br>";
       return cite;
     } else {
       return "?";
