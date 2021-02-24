@@ -110,13 +110,16 @@ module.exports = ({ markdownAST, markdownNode, getNode }, { components }) => {
     if (ent) {
       var cite = "<b>" + ent.title + "</b> ";
       cite += link_string(ent);
-      cite += ent.note;
+      if (ent.note) {
+        cite += "<span>  " + ent.note + " </span>";
+      }
       cite += author_string(ent, "${L}, ${I}", ", ", " and ");
       if (ent.year || ent.date) {
         cite += ", " + (ent.year || ent.date) + ". ";
       }
       cite += venue_string(ent);
       cite += doi_string(ent);
+      cite += "<br>";
       return cite;
     } else {
       return "?";
@@ -233,7 +236,7 @@ module.exports = ({ markdownAST, markdownNode, getNode }, { components }) => {
       let res = "<ol>";
 
       citations.forEach((key) => {
-        res += "<li>" + bibliography_cite(bibliography.get(key)) + "</li>";
+        res += "<li style=\"padding-top: 20px;\">" + bibliography_cite(bibliography.get(key)) + "</li>";
       });
       res += "</ol>";
       node.type = `html`;
@@ -243,7 +246,7 @@ module.exports = ({ markdownAST, markdownNode, getNode }, { components }) => {
 
   visit(markdownAST, "html", (node, index, parent) => {
     if (node.value.startsWith(`<bibliography>`)) {
-      let res = "<ol>";
+      let res = "<h2>References</h2><ol>";
 
       citations.forEach((key) => {
         res += "<li>" + bibliography_cite(bibliography.get(key)) + "</li>";
