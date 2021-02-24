@@ -247,7 +247,7 @@ module.exports = ({ markdownAST, markdownNode, getNode }, { components }) => {
 
       citations.forEach((key, i) => {
         res +=
-          '<li style="padding-top: 20px;" id="ref-[' +
+          '<li style="padding-bottom: 20px;" id="ref-[' +
           (i + 1) +
           ']">' +
           bibliography_cite(bibliography.get(key)) +
