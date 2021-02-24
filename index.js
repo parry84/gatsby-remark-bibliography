@@ -211,7 +211,7 @@ module.exports = ({ markdownAST, markdownNode, getNode }, { components }) => {
       keys.map((key, n) => {
         if (n > 0) {
           cite_hover_str += "<br><br>";
-          cite_hover_str += hover_cite(bibliography.get(key));
+          // cite_hover_str += hover_cite(bibliography.get(key));
         }
       });
       var n = 0;
