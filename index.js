@@ -244,7 +244,7 @@ module.exports = ({ markdownAST, markdownNode, getNode }, { components }) => {
       let res = "<h2>References</h2><ol>";
 
       citations.forEach((key) => {
-        res += "<li>" + bibliography_cite(bibliography.get(key)) + "</li>";
+        res += "<li style=\"padding-top: 20px;\">" + bibliography_cite(bibliography.get(key)) + "</li>";
       });
       res += "</ol>";
       node.value = res;
