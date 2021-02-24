@@ -217,7 +217,7 @@ module.exports = ({ markdownAST, markdownNode, getNode }, { components }) => {
       var n = 0;
 
       const orig_string = ""; //node.value;
-      const replacement = `<span id="citation-${n}" data-hover="${cite_hover_str}">${orig_string}<span class="citation-number">${cite_string}</span></span>`;
+      const replacement = `<a href="#ref-${cite_string}" id="citation-${cite_string}" data-hover="${cite_hover_str}">${orig_string}<span class="citation-number">${cite_string}</span></a>`;
 
       node.type = `html`;
       node.value = node.value.replace("\\cite{" + keys_str + "}", replacement);
@@ -245,9 +245,11 @@ module.exports = ({ markdownAST, markdownNode, getNode }, { components }) => {
     if (node.value.startsWith(`<bibliography>`)) {
       let res = "<h2>References</h2><ol>";
 
-      citations.forEach((key) => {
+      citations.forEach((key, i) => {
         res +=
-          '<li style="padding-top: 20px;">' +
+          '<li style="padding-top: 20px;" id="ref-' +
+          (i+1) +
+          '">' +
           bibliography_cite(bibliography.get(key)) +
           "</li>";
       });
