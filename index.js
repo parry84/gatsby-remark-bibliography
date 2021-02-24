@@ -209,8 +209,10 @@ module.exports = ({ markdownAST, markdownNode, getNode }, { components }) => {
 
       var cite_hover_str = "";
       keys.map((key, n) => {
-        cite_hover_str += "<br><br>";
-        cite_hover_str += hover_cite(bibliography.get(key));
+        if (n > 0) {
+          cite_hover_str += "<br><br>";
+          cite_hover_str += hover_cite(bibliography.get(key));
+        }
       });
       var n = 0;
 
@@ -244,7 +246,10 @@ module.exports = ({ markdownAST, markdownNode, getNode }, { components }) => {
       let res = "<h2>References</h2><ol>";
 
       citations.forEach((key) => {
-        res += "<li style=\"padding-top: 20px;\">" + bibliography_cite(bibliography.get(key)) + "</li>";
+        res +=
+          '<li style="padding-top: 20px;">' +
+          bibliography_cite(bibliography.get(key)) +
+          "</li>";
       });
       res += "</ol>";
       node.value = res;
