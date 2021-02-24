@@ -128,24 +128,18 @@ module.exports = ({ markdownAST, markdownNode, getNode }, { components }) => {
 
   function hover_cite(ent) {
     if (ent) {
-      var cite = "";
-      cite += "<b>" + ent.title + "</b>";
+      var cite = "<b>" + ent.title + "</b> ";
       cite += link_string(ent);
-      cite += "<br>";
-
-      var a_str = author_string(ent, "${I} ${L}", ", ") + ".";
-      var v_str =
-        venue_string(ent).trim() +
-        " " +
-        ent.year +
-        ". " +
-        doi_string(ent, true);
-
-      if ((a_str + v_str).length < Math.min(40, ent.title.length)) {
-        cite += a_str + " " + v_str;
-      } else {
-        cite += a_str + "<br>" + v_str;
+      if (ent.note) {
+        cite += "<span>  " + ent.note + " </span>";
       }
+      cite += author_string(ent, "${L}, ${I}", ", ", " and ");
+      if (ent.year || ent.date) {
+        cite += ", " + (ent.year || ent.date) + ". ";
+      }
+      cite += venue_string(ent);
+      cite += doi_string(ent);
+      cite += "<br>";
       return cite;
     } else {
       return "?";
@@ -217,8 +211,8 @@ module.exports = ({ markdownAST, markdownNode, getNode }, { components }) => {
 
       var cite_hover_str = "";
       keys.map((key, n) => {
-        if (n > 0) cite_hover_str += "<br><br>";
-        //cite_hover_str += hover_cite(bibliography.get(key));
+        cite_hover_str += "<br><br>";
+        cite_hover_str += hover_cite(bibliography.get(key));
       });
       var n = 0;
 
@@ -236,7 +230,10 @@ module.exports = ({ markdownAST, markdownNode, getNode }, { components }) => {
       let res = "<ol>";
 
       citations.forEach((key) => {
-        res += "<li style=\"padding-top: 20px;\">" + bibliography_cite(bibliography.get(key)) + "</li>";
+        res +=
+          '<li style="padding-top: 20px;">' +
+          bibliography_cite(bibliography.get(key)) +
+          "</li>";
       });
       res += "</ol>";
       node.type = `html`;
