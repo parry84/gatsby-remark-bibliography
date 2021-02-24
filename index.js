@@ -1,15 +1,14 @@
 "use strict";
 const visit = require(`unist-util-visit`);
 const bibtexParse = require(`bibtex-parse-js`);
-const fs = require(`fs`)
+const fs = require(`fs`);
 
 module.exports = ({ markdownAST, markdownNode, getNode }, { components }) => {
-
   const bibliography = new Map();
 
   // let's read the markdown
-  const bibtex_f = getNode(markdownNode.parent).dir + '/bibliography.bib';
-  let bibtex = '';
+  const bibtex_f = getNode(markdownNode.parent).dir + "/bibliography.bib";
+  let bibtex = "";
   if (fs.existsSync(bibtex_f)) {
     bibtex = fs.readFileSync(bibtex_f, `utf-8`);
   }
@@ -24,25 +23,31 @@ module.exports = ({ markdownAST, markdownNode, getNode }, { components }) => {
   }
 
   function author_string(ent, template, sep, finalSep) {
-    if (ent.author == null) { return ''; }
-    var names = ent.author.split(' and ');
-    let name_strings = names.map(name => {
+    if (ent.author == null) {
+      return "";
+    }
+    var names = ent.author.split(" and ");
+    let name_strings = names.map((name) => {
       name = name.trim();
-      if (name.indexOf(',') != -1) {
-        var last = name.split(',')[0].trim();
-        var firsts = name.split(',')[1];
+      if (name.indexOf(",") != -1) {
+        var last = name.split(",")[0].trim();
+        var firsts = name.split(",")[1];
       } else {
-        var last = name.split(' ').slice(-1)[0].trim();
-        var firsts = name.split(' ').slice(0, -1).join(' ');
+        var last = name.split(" ").slice(-1)[0].trim();
+        var firsts = name.split(" ").slice(0, -1).join(" ");
       }
-      var initials = '';
+      var initials = "";
       if (firsts != undefined) {
-        initials = firsts.trim().split(' ').map(s => s.trim()[0]);
-        initials = initials.join('.') + '.';
+        initials = firsts
+          .trim()
+          .split(" ")
+          .map((s) => s.trim()[0]);
+        initials = initials.join(".") + "";
       }
-      return template.replace('${F}', firsts)
-        .replace('${L}', last)
-        .replace('${I}', initials);
+      return template
+        .replace("${F}", firsts)
+        .replace("${L}", last)
+        .replace("${I}", initials);
     });
     if (names.length > 1) {
       var str = name_strings.slice(0, names.length - 1).join(sep);
@@ -54,98 +59,93 @@ module.exports = ({ markdownAST, markdownNode, getNode }, { components }) => {
   }
 
   function venue_string(ent) {
-    var cite = (ent.journal || ent.booktitle || '');
-    if ('volume' in ent) {
+    var cite = ent.journal || ent.booktitle || "";
+    if ("volume" in ent) {
       var issue = ent.issue || ent.number;
-      issue = (issue != undefined) ? '(' + issue + ')' : '';
-      cite += ', Vol ' + ent.volume + issue;
+      issue = issue != undefined ? "(" + issue + ")" : "";
+      cite += ", Vol " + ent.volume + issue;
     }
-    if ('pages' in ent) {
-      cite += ', pp. ' + ent.pages;
+    if ("pages" in ent) {
+      cite += ", pp. " + ent.pages;
     }
-    if (cite != '') cite += '. ';
-    if ('publisher' in ent) {
+    if (cite != "") cite += ". ";
+    if ("publisher" in ent) {
       cite += ent.publisher;
-      if (cite[cite.length - 1] != '.') cite += '.';
+      if (cite[cite.length - 1] != ".") cite += ".";
     }
     return cite;
   }
 
   function link_string(ent) {
-    if ('url' in ent) {
+    if ("url" in ent) {
       var url = ent.url;
-      var arxiv_match = (/arxiv\.org\/abs\/([0-9\.]*)/).exec(url);
+      var arxiv_match = /arxiv\.org\/abs\/([0-9\.]*)/.exec(url);
       if (arxiv_match != null) {
         url = `http://arxiv.org/pdf/${arxiv_match[1]}.pdf`;
       }
 
-      if (url.slice(-4) == '.pdf') {
-        var label = 'PDF';
-      } else if (url.slice(-5) == '.html') {
-        var label = 'HTML';
+      if (url.slice(-4) == ".pdf") {
+        var label = "PDF";
+      } else if (url.slice(-5) == ".html") {
+        var label = "HTML";
       }
-      return ` &ensp;<a href="${url}">[${label || 'link'}]</a>`;
-    }/* else if ("doi" in ent){
+      return ` &ensp;<a href="${url}">[${label || "URL"}]</a>`;
+    } /* else if ("doi" in ent){
     return ` &ensp;<a href="https://doi.org/${ent.doi}" >[DOI]</a>`;
   }*/ else {
-      return '';
+      return "";
     }
   }
   function doi_string(ent, new_line) {
-    if ('doi' in ent) {
-      return `${new_line ? '<br>' : ''} <a href="https://doi.org/${ent.doi}" style="text-decoration:inherit;">DOI: ${ent.doi}</a>`;
+    if ("doi" in ent) {
+      return `${new_line ? "<br>" : ""} <a href="https://doi.org/${
+        ent.doi
+      }" style="text-decoration:inherit;">DOI: ${ent.doi}</a>`;
     } else {
-      return '';
+      return "";
     }
   }
 
   function bibliography_cite(ent, fancy) {
     if (ent) {
-      var cite = '<b>' + ent.title + '</b> ';
-      cite += link_string(ent) + '<br>';
-      cite += author_string(ent, '${L}, ${I}', ', ', ' and ');
+      var cite = "<b>" + ent.title + "</b> ";
+      cite += link_string(ent);
+      cite += ent.note;
+      cite += author_string(ent, "${L}, ${I}", ", ", " and ");
       if (ent.year || ent.date) {
-        cite += ', ' + (ent.year || ent.date) + '. ';
-      } else {
-        cite += '. ';
+        cite += ", " + (ent.year || ent.date) + ". ";
       }
       cite += venue_string(ent);
       cite += doi_string(ent);
       return cite;
-      /*var cite =  author_string(ent, "${L}, ${I}", ", ", " and ");
-      if (ent.year || ent.date){
-        cite += ", " + (ent.year || ent.date) + ". "
-      } else {
-        cite += ". "
-      }
-      cite += "<b>" + ent.title + "</b>. ";
-      cite += venue_string(ent);
-      cite += doi_string(ent);
-      cite += link_string(ent);
-      return cite*/
     } else {
-      return '?';
+      return "?";
     }
   }
 
   function hover_cite(ent) {
     if (ent) {
-      var cite = '';
-      cite += '<b>' + ent.title + '</b>';
+      var cite = "";
+      cite += "<b>" + ent.title + "</b>";
       cite += link_string(ent);
-      cite += '<br>';
+      cite += "<br>";
 
-      var a_str = author_string(ent, '${I} ${L}', ', ') + '.';
-      var v_str = venue_string(ent).trim() + ' ' + ent.year + '. ' + doi_string(ent, true);
+      var a_str = author_string(ent, "${I} ${L}", ", ") + ".";
+      var v_str =
+        venue_string(ent).trim() +
+        " " +
+        ent.year +
+        ". " +
+        doi_string(ent, true);
 
       if ((a_str + v_str).length < Math.min(40, ent.title.length)) {
-        cite += a_str + ' ' + v_str;
+        cite += a_str + " " + v_str;
       } else {
-        cite += a_str + '<br>' + v_str;
+        cite += a_str + "<br>" + v_str;
       }
       return cite;
     } else {
-      return '?';
+      return "?";
     }
   }
 
@@ -154,39 +154,26 @@ module.exports = ({ markdownAST, markdownNode, getNode }, { components }) => {
     function cite_string(key) {
       if (bibliography.get(key)) {
         if (!(key in citations)) {
-          citations.push(key)
+          citations.push(key);
         }
         var n = citations.indexOf(key) + 1;
-        return '' + n;
+        return "" + n;
       } else {
-        return '?';
+        return "?";
       }
     }
-    return '[' + keys.map(cite_string).join(', ') + ']';
+    return "[" + keys.map(cite_string).join(", ") + "]";
   }
 
   visit(markdownAST, "html", (node, index, parent) => {
-    console.log(node.value)
+    // console.log(node.value)
     if (node.value.startsWith(`<bibliography>`)) {
-      parent.type = "div"
+      parent.type = "div";
 
       let bibtex = node.value;
-      bibtex = bibtex.replace("<bibliography>", "").replace("</bibliography>", "")
-      const parsedEntries = bibtexParse.toJSON(bibtex);
-      for (const entry of parsedEntries) {
-        for (const [key, value] of Object.entries(entry.entryTags)) {
-          entry.entryTags[key.toLowerCase()] = normalizeTag(value);
-        }
-        entry.entryTags.type = entry.entryType;
-        bibliography.set(entry.citationKey, entry.entryTags);
-      }
-    }
-  })
-
-  visit(markdownAST, `text`, node => {
-    var bibtex = node.value.match(/@@bibliography@@([^]*)@@bibliography@@/gm);
-    if (bibtex && bibtex.length > 0) {
-      bibtex = bibtex[0].replace("@@bibliography@@", "").replace("@@bibliography@@", "")
+      bibtex = bibtex
+        .replace("<bibliography>", "")
+        .replace("</bibliography>", "");
       const parsedEntries = bibtexParse.toJSON(bibtex);
       for (const entry of parsedEntries) {
         for (const [key, value] of Object.entries(entry.entryTags)) {
@@ -198,24 +185,41 @@ module.exports = ({ markdownAST, markdownNode, getNode }, { components }) => {
     }
   });
 
-  visit(markdownAST, `text`, node => {
+  visit(markdownAST, `text`, (node) => {
+    var bibtex = node.value.match(/@@bibliography@@([^]*)@@bibliography@@/gm);
+    if (bibtex && bibtex.length > 0) {
+      bibtex = bibtex[0]
+        .replace("@@bibliography@@", "")
+        .replace("@@bibliography@@", "");
+      const parsedEntries = bibtexParse.toJSON(bibtex);
+      for (const entry of parsedEntries) {
+        for (const [key, value] of Object.entries(entry.entryTags)) {
+          entry.entryTags[key.toLowerCase()] = normalizeTag(value);
+        }
+        entry.entryTags.type = entry.entryType;
+        bibliography.set(entry.citationKey, entry.entryTags);
+      }
+    }
+  });
+
+  visit(markdownAST, `text`, (node) => {
     var citekeys = node.value.match(/\\cite{([^}]*)}/g);
 
     //console.log(citekeys);
     for (var k in citekeys) {
       const keys_str = citekeys[k].substring(6, citekeys[k].length - 1);
-      const keys = keys_str.split(',');
+      const keys = keys_str.split(",");
 
       const cite_string = inline_cite_short(keys, bibliography);
 
-      var cite_hover_str = '';
+      var cite_hover_str = "";
       keys.map((key, n) => {
-        if (n > 0) cite_hover_str += '<br><br>';
+        if (n > 0) cite_hover_str += "<br><br>";
         //cite_hover_str += hover_cite(bibliography.get(key));
       });
       var n = 0;
 
-      const orig_string = '';//node.value;
+      const orig_string = ""; //node.value;
       const replacement = `<span id="citation-${n}" data-hover="${cite_hover_str}">${orig_string}<span class="citation-number">${cite_string}</span></span>`;
 
       node.type = `html`;
@@ -223,15 +227,15 @@ module.exports = ({ markdownAST, markdownNode, getNode }, { components }) => {
     }
   });
 
-  visit(markdownAST, `text`, node => {
+  visit(markdownAST, `text`, (node) => {
     var bibtex = node.value.match(/@@bibliography@@([^]*)@@bibliography@@/gm);
     if (bibtex && bibtex.length > 0) {
-      let res = '<ol>';
+      let res = "<ol>";
 
-      citations.forEach(key => {
-        res += '<li>' + bibliography_cite(bibliography.get(key)) + '</li>';
+      citations.forEach((key) => {
+        res += "<li>" + bibliography_cite(bibliography.get(key)) + "</li>";
       });
-      res += '</ol>';
+      res += "</ol>";
       node.type = `html`;
       node.value = res;
     }
@@ -239,20 +243,20 @@ module.exports = ({ markdownAST, markdownNode, getNode }, { components }) => {
 
   visit(markdownAST, "html", (node, index, parent) => {
     if (node.value.startsWith(`<bibliography>`)) {
-      let res = '<ol>';
+      let res = "<ol>";
 
-      citations.forEach(key => {
-        res += '<li>' + bibliography_cite(bibliography.get(key)) + '</li>';
+      citations.forEach((key) => {
+        res += "<li>" + bibliography_cite(bibliography.get(key)) + "</li>";
       });
-      res += '</ol>';
+      res += "</ol>";
       node.value = res;
     }
   });
 
   function normalizeTag(string) {
     return string
-      .replace(/[\t\n ]+/g, ' ')
+      .replace(/[\t\n ]+/g, " ")
       .replace(/{\\["^`.'acu~Hvs]( )?([a-zA-Z])}/g, (full, x, char) => char)
       .replace(/{\\([a-zA-Z])}/g, (full, char) => char);
   }
-}
+};
