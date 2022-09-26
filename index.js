@@ -243,7 +243,7 @@ module.exports = ({ markdownAST, markdownNode, getNode }, { components }) => {
 
   visit(markdownAST, "html", (node, index, parent) => {
     if (node.value.startsWith(`<bibliography>`)) {
-      let res = "<h2>References</h2><ol>";
+      let res = "<h2>Riferimenti</h2><ol>";
 
       citations.forEach((key, i) => {
         res +=
